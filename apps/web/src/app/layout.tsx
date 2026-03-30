@@ -1,29 +1,30 @@
-
-    import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import type { Metadata } from 'next';
+import { Outfit } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
 
-    const inter = Inter({ subsets: ['latin'] });
+const outfit = Outfit({ subsets: ['latin'] });
 
-    export const metadata: Metadata = {
-      title: 'My DApp',
-      description: 'A Web3 application built with Cradle',
-    };
+export const metadata: Metadata = {
+  title: 'My DApp | Web3 Dashboard',
+  description: 'A premium Web3 application built with Arbitrum Stylus',
+};
 
-    export default function RootLayout({
-      children,
-    }: {
-      children: React.ReactNode;
-    }) {
-      return (
-        <html lang="en" className="dark" suppressHydrationWarning>
-          <body className={inter.className}>
-            <Providers>
-              {children}
-            </Providers>
-          </body>
-        </html>
-      );
-    }
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className={outfit.className}>
+        <AnimatedBackground />
+        <Providers>
+          {children}
+        </Providers>
+      </body>
+    </html>
+  );
+}
   

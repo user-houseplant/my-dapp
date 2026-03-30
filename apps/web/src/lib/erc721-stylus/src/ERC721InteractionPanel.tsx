@@ -18,8 +18,11 @@ import {
   CheckCircle2,
   Globe,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sparkle
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useConfetti } from '@/components/ConfettiEffect';
 import { cn } from './cn';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select';
 import { useAccount, useWalletClient, usePublicClient, useSwitchChain } from 'wagmi';
@@ -170,6 +173,7 @@ export function ERC721InteractionPanel({
   const [showCustomContract, setShowCustomContract] = useState(false);
   const [customAddress, setCustomAddress] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const { fire } = useConfetti();
 
   // Sync callbacks with selected state
   useEffect(() => {
@@ -452,6 +456,7 @@ export function ERC721InteractionPanel({
       await tx.wait();
       console.log('[ERC721] Transaction confirmed');
       setTxStatus({ status: 'success', message: successMessage, hash: tx.hash });
+      fire(); // CELEBRATE!
       fetchNFTInfo();
     } catch (error: any) {
       console.error('[ERC721] Transaction error:', error);
@@ -789,32 +794,47 @@ export function ERC721InteractionPanel({
       )} */}
 
       {/* Transaction Status */}
-      {txStatus.status !== 'idle' && (
-        <div className={cn(
-          'rounded-lg p-2.5 border flex items-start gap-2',
-          txStatus.status === 'pending' && 'bg-blue-500/10 border-blue-500/30',
-          txStatus.status === 'success' && 'bg-emerald-500/10 border-emerald-500/30',
-          txStatus.status === 'error' && 'bg-red-500/10 border-red-500/30'
-        )}>
-          {txStatus.status === 'pending' && <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin shrink-0" />}
-          {txStatus.status === 'success' && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
-          {txStatus.status === 'error' && <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />}
-          <div className="flex-1 min-w-0">
-            <p className={cn(
-              'text-[10px] font-medium truncate',
-              txStatus.status === 'pending' && 'text-blue-300',
-              txStatus.status === 'success' && 'text-emerald-300',
-              txStatus.status === 'error' && 'text-red-300'
-            )}>{txStatus.message}</p>
-            {txStatus.hash && (
-              <a href={`${explorerUrl}/tx/${txStatus.hash}`} target="_blank" rel="noopener noreferrer"
-                className="text-[9px] text-forge-muted hover:text-white flex items-center gap-1">
-                Explorer <ExternalLink className="w-2.5 h-2.5" />
-              </a>
+      <AnimatePresence>
+        {txStatus.status !== 'idle' && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0, y: -10 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -10 }}
+            className={cn(
+              'rounded-xl p-4 border flex items-start gap-3 shadow-lg backdrop-blur-xl',
+              txStatus.status === 'pending' && 'bg-blue-500/10 border-blue-500/30 shadow-blue-500/10',
+              txStatus.status === 'success' && 'bg-emerald-500/10 border-emerald-500/30 shadow-emerald-500/10',
+              txStatus.status === 'error' && 'bg-red-500/10 border-red-500/30 shadow-red-500/10'
             )}
-          </div>
-        </div>
-      )}
+          >
+            <div className="mt-0.5">
+              {txStatus.status === 'pending' && <Loader2 className="w-4 h-4 text-blue-400 animate-spin shrink-0" />}
+              {txStatus.status === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
+              {txStatus.status === 'error' && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={cn(
+                'text-[11px] font-bold tracking-tight',
+                txStatus.status === 'pending' && 'text-blue-300',
+                txStatus.status === 'success' && 'text-emerald-300',
+                txStatus.status === 'error' && 'text-red-300'
+              )}>{txStatus.message}</p>
+              {txStatus.hash && (
+                <motion.a 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  href={`${explorerUrl}/tx/${txStatus.hash}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-white/40 hover:text-white flex items-center gap-1.5 mt-1.5 transition-colors"
+                >
+                  View on Explorer <ExternalLink className="w-2.5 h-2.5" />
+                </motion.a>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* NFT Stats */}
       {isConnected && walletConnected && (
