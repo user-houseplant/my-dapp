@@ -77,26 +77,7 @@ const robinhoodTestnet: Chain = {
   testnet: true,
 };
 
-// ERC721 ABI for the deployed Stylus NFT contract (IStylusNFT)
-const ERC721_ABI = [
-  // ERC721 Standard Interface
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function balanceOf(address owner) view returns (uint256)",
-  "function ownerOf(uint256 token_id) view returns (address)",
-  "function safeTransferFrom(address from, address to, uint256 token_id, bytes data)",
-  "function safeTransferFrom(address from, address to, uint256 token_id)",
-  "function transferFrom(address from, address to, uint256 token_id)",
-  "function approve(address approved, uint256 token_id)",
-  "function setApprovalForAll(address operator, bool approved)",
-  "function getApproved(uint256 token_id) view returns (address)",
-  "function isApprovedForAll(address owner, address operator) view returns (bool)",
-  // StylusNFT Specific Functions (from lib.rs)
-  "function mint()",
-  "function mintTo(address to)",
-  "function safeMint(address to)",
-  "function burn(uint256 token_id)",
-];
+import { ERC721_ABI } from './abi';
 
 // Network-specific default contract addresses (only for networks where contracts are deployed)
 const DEFAULT_CONTRACT_ADDRESSES: Record<string, string | undefined> = {
@@ -157,6 +138,8 @@ interface ERC721InteractionPanelProps {
   network?: 'arbitrum' | 'arbitrum-sepolia' | 'superposition' | 'superposition-testnet' | 'robinhood-testnet';
   /** Optional: URLs for chain logos (arbitrum, superposition, robinhood) - pass to show logos in network selector */
   logos?: ChainLogos;
+  onNetworkChange?: (network: string) => void;
+  onAddressChange?: (address: string) => void;
 }
 
 interface TxStatus {
@@ -179,12 +162,23 @@ export function ERC721InteractionPanel({
   contractAddress: initialAddress,
   network: initialNetwork = 'arbitrum-sepolia',
   logos,
+  onNetworkChange,
+  onAddressChange,
 }: ERC721InteractionPanelProps) {
   const [selectedNetwork, setSelectedNetwork] = useState<'arbitrum' | 'arbitrum-sepolia' | 'superposition' | 'superposition-testnet' | 'robinhood-testnet'>(initialNetwork);
   const [contractAddress, setContractAddress] = useState(initialAddress || DEFAULT_CONTRACT_ADDRESSES[initialNetwork] || '');
   const [showCustomContract, setShowCustomContract] = useState(false);
   const [customAddress, setCustomAddress] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+
+  // Sync callbacks with selected state
+  useEffect(() => {
+    if (onNetworkChange) onNetworkChange(selectedNetwork);
+  }, [selectedNetwork, onNetworkChange]);
+
+  useEffect(() => {
+    if (onAddressChange) onAddressChange(contractAddress);
+  }, [contractAddress, onAddressChange]);
 
   const networkConfig = NETWORKS[selectedNetwork];
   const rpcUrl = networkConfig.rpcUrl;

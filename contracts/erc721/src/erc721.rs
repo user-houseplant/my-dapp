@@ -8,7 +8,7 @@
 //!
 //! Note that this code is unaudited and not fit for production use.
 
-use alloc::vec;
+use alloc::{format, string::String, vec};
 use core::{borrow::BorrowMut, marker::PhantomData};
 use stylus_sdk::{
     abi::Bytes,
@@ -25,6 +25,9 @@ pub trait Erc721Params {
 
     /// Immutable NFT symbol.
     const SYMBOL: &'static str;
+
+    /// Immutable NFT base URI.
+    const BASE_URI: &'static str;
 }
 
 sol_storage! {
@@ -247,6 +250,12 @@ impl<T: Erc721Params> Erc721<T> {
     /// Immutable NFT symbol.
     pub fn symbol() -> Result<String, Erc721Error> {
         Ok(T::SYMBOL.into())
+    }
+
+    /// Returns the Uniform Resource Identifier (URI) for `token_id` token.
+    pub fn token_uri(&self, token_id: U256) -> Result<String, Erc721Error> {
+        self.owner_of(token_id)?; // Check if token exists
+        Ok(format!("{}{}", T::BASE_URI, token_id))
     }
 
     /// Gets the number of NFTs owned by an account.

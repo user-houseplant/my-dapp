@@ -29,6 +29,7 @@ struct RobinhoodNFTParams;
 impl Erc721Params for RobinhoodNFTParams {
     const NAME: &'static str = "RobinhoodNFT";
     const SYMBOL: &'static str = "RHNFT";
+    const BASE_URI: &'static str = "https://api.my-dapp.com/tokens/";
 }
 
 // Define the entrypoint as a Solidity storage object. The sol_storage! macro
